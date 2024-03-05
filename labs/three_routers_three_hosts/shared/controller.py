@@ -30,6 +30,36 @@ def main(p4info_file_path, bmv2_file_path, routing_info):
             #proto_dump_file='/logs/s1-p4runtime-requests.txt'
         )
 
+        def print_table_entries(table_name: str):
+            print ("-"*64)
+            print ("Table Entries of", table_name)
+            print ("match_field: value | action | action_param: value")
+            
+            table_id = p4info_helper.get_tables_id(table_name)
+            for response in s1.ReadTableEntries(table_id):
+                for entity in response.entities:
+                    #print(dir(entity.table_entry.match))
+                    table_entry = entity.table_entry
+                    for match in table_entry.match:
+                        match_id = match.field_id
+                        match_name = p4info_helper.get_match_field_name(
+                            table_name=table_name,
+                            match_field_id=match_id
+                        )            
+                        match_val = match.exact.value
+                        print(f"{match_name}:{match_val.hex()}", end=" ")
+                    
+                    action_id = table_entry.action.action.action_id
+                    action_name = p4info_helper.get_actions_name(action_id)
+                    print(f"| {action_name} |", end=" ") 
+                    for param in table_entry.action.action.params:
+                        param_id = param.param_id
+                        param_val = param.value
+                        param_name = p4info_helper.get_action_param_name(action_name, param_id)
+                        print(f"{param_name}:{param_val.hex()}", end=" ")
+                    print()
+            print ("-"*64)
+
         # Send master arbitration update message to establish this controller as
         # master (required by P4Runtime before performing any other write operation)
         s1.MasterArbitrationUpdate()
@@ -84,8 +114,6 @@ def main(p4info_file_path, bmv2_file_path, routing_info):
                 # Add the table entry to the switch
                 s1.WriteTableEntry(arp_entry)
                 print("wrote to arp")
-
-
                 
                 print ("Add MAC table entry", next_hop_mac, egress_port, egress_mac)
                 # TODO: Add table entries to "MyIngress.dmac_forward"
@@ -101,6 +129,11 @@ def main(p4info_file_path, bmv2_file_path, routing_info):
                 # Add the table entry to the switch
                 s1.WriteTableEntry(dmac_entry)
                 print("wrote to dmac")
+
+                print("---- TABLE ENTRIES ----")
+                print_table_entries("MyIngress.ipv4_route")
+                print_table_entries("MyIngress.arp_table")
+                print_table_entries("MyIngress.dmac_forward")
 
 
     
