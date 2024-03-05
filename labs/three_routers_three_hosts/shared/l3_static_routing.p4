@@ -58,20 +58,22 @@ parser MyParser(packet_in packet,
     state start {
         transition parse_ethernet;
     }
+
     state parse_ethernet {
-        /* TODO: do ethernet header parsing */
-        /* if the frame type is IPv4, go to IPv4 parsing */ 
-        // If the EtherType is IPv4 (0x0800), go to IPv4 parsing
-        16w0800 : parse_ipv4;
-        // Add other EtherType values and transitions as needed
-        default : accept; // Default to accepting the packet
+        packet.extract(hdr.ethernet);  // This line extracts the Ethernet header
+
+        // Assuming ETHER_IPV4 is a macro for the EtherType value for IPv4 packets
+        transition select(hdr.ethernet.ether_type) {
+           ETHER_IPV4: parse_ipv4;
+        }
     }
 
     state parse_ipv4 {
-        packet.extract(hdr.ipv4);
+        packet.extract(hdr.ipv4); // Assuming you have ipv4 in your headers definition
         transition accept;
     }
 }
+
 
 
 /*************************************************************************
@@ -104,7 +106,7 @@ control MyIngress(inout headers hdr,
         /* TODO: change the packet's source MAC address to egress_mac */
         hdr.ethernet.src_addr = egress_mac;
         /* Then set the egress_spec in the packet's standard_metadata to egress_port */
-        standard_metadata.egress_spec = egress_port
+        standard_metadata.egress_spec = egress_port;
     }
    
     action decrement_ttl() {

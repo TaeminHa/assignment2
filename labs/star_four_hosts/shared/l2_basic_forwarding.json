@@ -139,7 +139,7 @@
       "id" : 0,
       "source_info" : {
         "filename" : "/shared/l2_basic_forwarding.p4",
-        "line" : 155,
+        "line" : 156,
         "column" : 8,
         "source_fragment" : "MyDeparser"
       },
@@ -175,8 +175,14 @@
   ],
   "actions" : [
     {
-      "name" : "MyIngress.forward_to_port",
+      "name" : "NoAction",
       "id" : 0,
+      "runtime_data" : [],
+      "primitives" : []
+    },
+    {
+      "name" : "MyIngress.forward_to_port",
+      "id" : 1,
       "runtime_data" : [
         {
           "name" : "egress_port",
@@ -207,7 +213,7 @@
     },
     {
       "name" : "MyIngress.broadcast",
-      "id" : 1,
+      "id" : 2,
       "runtime_data" : [],
       "primitives" : [
         {
@@ -246,7 +252,7 @@
     },
     {
       "name" : "MyIngress.learn",
-      "id" : 2,
+      "id" : 3,
       "runtime_data" : [],
       "primitives" : [
         {
@@ -363,14 +369,15 @@
           "with_counters" : false,
           "support_timeout" : true,
           "direct_meters" : null,
-          "action_ids" : [2],
-          "actions" : ["MyIngress.learn"],
+          "action_ids" : [0, 3],
+          "actions" : ["NoAction", "MyIngress.learn"],
           "base_default_next" : "MyIngress.dmac_forward",
           "next_tables" : {
+            "NoAction" : "MyIngress.dmac_forward",
             "MyIngress.learn" : "MyIngress.dmac_forward"
           },
           "default_entry" : {
-            "action_id" : 2,
+            "action_id" : 3,
             "action_const" : false,
             "action_data" : [],
             "action_entry_const" : false
@@ -399,7 +406,7 @@
           "with_counters" : false,
           "support_timeout" : true,
           "direct_meters" : null,
-          "action_ids" : [0, 1],
+          "action_ids" : [1, 2],
           "actions" : ["MyIngress.forward_to_port", "MyIngress.broadcast"],
           "base_default_next" : null,
           "next_tables" : {
@@ -407,7 +414,7 @@
             "MyIngress.broadcast" : null
           },
           "default_entry" : {
-            "action_id" : 1,
+            "action_id" : 2,
             "action_const" : false,
             "action_data" : [],
             "action_entry_const" : false
@@ -422,7 +429,7 @@
       "id" : 1,
       "source_info" : {
         "filename" : "/shared/l2_basic_forwarding.p4",
-        "line" : 132,
+        "line" : 133,
         "column" : 8,
         "source_fragment" : "MyEgress"
       },

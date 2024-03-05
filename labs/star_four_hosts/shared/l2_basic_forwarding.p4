@@ -97,7 +97,7 @@ control MyIngress(inout headers hdr,
             forward_to_port;
             broadcast; // default action on miss
         }
-        default_action = broadcast();
+        default_action = broadcast;
 
         size = 4;
         support_timeout = true;
@@ -110,9 +110,10 @@ control MyIngress(inout headers hdr,
             hdr.ethernet.src_addr : exact;
         }
         actions = {
+            NoAction;
             learn; // apply learn if there is no entry
         }
-        default_action = learn(); 
+        default_action = learn; 
 
         size = 4;
         support_timeout = true;

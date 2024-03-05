@@ -90,8 +90,10 @@ class SwitchConnection(object):
         request.election_id.low = 1
         update = request.updates.add()
         if table_entry.is_default_action:
+            print('default action')
             update.type = p4runtime_pb2.Update.MODIFY
         else:
+            print('non default action')
             update.type = p4runtime_pb2.Update.INSERT
         update.entity.table_entry.CopyFrom(table_entry)
         if dry_run:

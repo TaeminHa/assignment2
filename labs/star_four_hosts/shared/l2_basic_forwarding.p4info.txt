@@ -35,10 +35,21 @@ tables {
     match_type: EXACT
   }
   action_refs {
+    id: 21257015
+  }
+  action_refs {
     id: 23630042
   }
   size: 4
   idle_timeout_behavior: NOTIFY_CONTROL
+}
+actions {
+  preamble {
+    id: 21257015
+    name: "NoAction"
+    alias: "NoAction"
+    annotations: "@noWarn(\"unused\")"
+  }
 }
 actions {
   preamble {
