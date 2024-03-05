@@ -56,8 +56,11 @@ def main(p4info_file_path, bmv2_file_path):
         
         # TODO: MAC learning
         while (True):
+            print("in mac learning section")
             # read digest message in from switch
             digests = s1.DigestList()
+            print("digests")
+            print(digests)
             
             digest_type = digests.WhichOneof('update')
             if (digest_type == 'digest'):
@@ -77,7 +80,52 @@ def main(p4info_file_path, bmv2_file_path):
                 # 1. Use p4info_helper's buildTableEntry() method to build a table_entry
                 # 2. Set timeout by setting table_entry.idle_timeout_ns
                 # 3. Add the table_entry to the switch by calling s1's WriteTableEntry() method
-                
+
+                dmac_entry = p4info_helper.buildTableEntry(
+                    table_name="MyIngress.dmac_forward",
+                    match_fields={"hdr.ethernet.dest_addr": eth_src_addr},
+                    action_name="MyIngress.forward_to_port",
+                    action_params={"egress_port": port_id}
+                )
+                dmac_entry.idle_timeout_ns = 15000000000
+                s1.WriteTableEntry(dmac_entry, update_type="MODIFY")
+
+                smac_entry = p4info_helper.buildTableEntry(
+                    table_name="MyIngress.smac_table",
+                    match_fields={"hdr.ethernet.src_addr": eth_src_addr},
+                    action_name="learn",
+                    # action_params={"egress_port": port_id}
+                )
+                smac_entry.idle_timeout_ns = 15000000000
+                s1.WriteTableEntry(smac_entry, update_type="MODIFY")
+            
+            
+            
+                # mac_to_port = {"00:00:0a:00:00:01":1,
+                #             "00:00:0a:00:00:02":2,
+                #             "00:00:0a:00:00:03":3,
+                #             "00:00:0a:00:00:04":4}
+                # for eth_dest_addr, port_id in mac_to_port.items():
+                #     dmac_entry = p4info_helper.buildTableEntry(
+                #         table_name="MyIngress.dmac_forward",
+                #         match_fields={"hdr.ethernet.dest_addr": eth_dest_addr},
+                #         action_name="MyIngress.forward_to_port",
+                #         action_params={"egress_port": port_id}
+                #     )
+                #     dmac_entry.idle_timeout_ns = 15000000000
+                #     s1.WriteTableEntry(dmac_entry)
+
+                # for eth_src_addr, port_id in mac_to_port.items():
+                #     smac_entry = p4info_helper.buildTableEntry(
+                #         table_name="MyIngress.smac_table",
+                #         match_fields={"hdr.ethernet.src_addr": eth_src_addr},
+                #         action_name="learn",
+                #         # action_params={"egress_port": port_id}
+                #     )
+                #     smac_entry.idle_timeout_ns = 15000000000
+                #     s1.WriteTableEntry(smac_entry)
+
+                print(s1)
             elif (digest_type == 'idle_timeout_notification'):
                 # Handle timeout
                 table_entries = digests.idle_timeout_notification.table_entry
@@ -86,7 +134,7 @@ def main(p4info_file_path, bmv2_file_path):
                     print("Deleted table entry")
                     print("Table_id: ", table_entry.table_id) 
         
-      except KeyboardInterrupt:
+    except KeyboardInterrupt:
         print(" Shutting down.")
     except grpc.RpcError as e:
         printGrpcError(e)

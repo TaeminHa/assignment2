@@ -1,0 +1,107 @@
+pkg_info {
+  arch: "v1model"
+}
+tables {
+  preamble {
+    id: 48070933
+    name: "MyIngress.dmac_forward"
+    alias: "dmac_forward"
+  }
+  match_fields {
+    id: 1
+    name: "hdr.ethernet.dest_addr"
+    bitwidth: 48
+    match_type: EXACT
+  }
+  action_refs {
+    id: 17916951
+  }
+  action_refs {
+    id: 22516369
+  }
+  size: 4
+  idle_timeout_behavior: NOTIFY_CONTROL
+}
+tables {
+  preamble {
+    id: 42141914
+    name: "MyIngress.smac_table"
+    alias: "smac_table"
+  }
+  match_fields {
+    id: 1
+    name: "hdr.ethernet.src_addr"
+    bitwidth: 48
+    match_type: EXACT
+  }
+  action_refs {
+    id: 23630042
+  }
+  size: 4
+  idle_timeout_behavior: NOTIFY_CONTROL
+}
+actions {
+  preamble {
+    id: 17916951
+    name: "MyIngress.forward_to_port"
+    alias: "forward_to_port"
+  }
+  params {
+    id: 1
+    name: "egress_port"
+    bitwidth: 9
+  }
+}
+actions {
+  preamble {
+    id: 22516369
+    name: "MyIngress.broadcast"
+    alias: "broadcast"
+  }
+}
+actions {
+  preamble {
+    id: 23630042
+    name: "MyIngress.learn"
+    alias: "learn"
+  }
+}
+digests {
+  preamble {
+    id: 402184575
+    name: "mac_learn_digest_t"
+    alias: "mac_learn_digest_t"
+  }
+  type_spec {
+    struct {
+      name: "mac_learn_digest_t"
+    }
+  }
+}
+type_info {
+  structs {
+    key: "mac_learn_digest_t"
+    value {
+      members {
+        name: "src_mac"
+        type_spec {
+          bitstring {
+            bit {
+              bitwidth: 48
+            }
+          }
+        }
+      }
+      members {
+        name: "ingress_port"
+        type_spec {
+          bitstring {
+            bit {
+              bitwidth: 9
+            }
+          }
+        }
+      }
+    }
+  }
+}

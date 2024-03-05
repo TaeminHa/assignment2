@@ -10,11 +10,26 @@ typedef bit<48> macAddr_t;
 typedef bit<32> ipAddr_t;
 header ethernet_t {
     /* TODO: define Ethernet header */ 
+    macAddr_t src_addr;
+    macAddr_t dest_addr;
+    bit<16> ether_type;
 }
 
 /* a basic ip header without options and pad */
 header ipv4_t {
-    /* TODO: define IP header */ 
+    bit<4> version;           // IP version
+    bit<4> ihl;               // Internet Header Length (IHL)
+    bit<8> diffserv;          // Differentiated Services (DSCP/ECN)
+    bit<16> total_len;        // Total Length
+    bit<16> identification;   // Identification
+    bit<3> flags;             // Flags
+    bit<13> frag_offset;      // Fragment Offset
+    bit<8> ttl;               // Time to Live (TTL)
+    bit<8> protocol;          // Protocol
+    bit<16> hdr_checksum;     // Header Checksum
+    ipAddr_t src_addr;        // Source IP address
+    ipAddr_t dest_addr;       // Destination IP address
+
 }
 
 struct metadata {
@@ -46,6 +61,10 @@ parser MyParser(packet_in packet,
     state parse_ethernet {
         /* TODO: do ethernet header parsing */
         /* if the frame type is IPv4, go to IPv4 parsing */ 
+        // If the EtherType is IPv4 (0x0800), go to IPv4 parsing
+        16w0800 : parse_ipv4;
+        // Add other EtherType values and transitions as needed
+        default : accept; // Default to accepting the packet
     }
 
     state parse_ipv4 {
@@ -63,6 +82,7 @@ control MyVerifyChecksum(inout headers hdr, inout metadata meta) {
     apply {
         /* TODO: verify checksum using verify_checksum() extern */
         /* Use HashAlgorithm.csum16 as a hash algorithm */ 
+        verify_checksum(HashAlgorithm.csum16, hdr);
     }
 }
 
@@ -82,23 +102,37 @@ control MyIngress(inout headers hdr,
 
     action forward_to_port(bit<9> egress_port, macAddr_t egress_mac) {
         /* TODO: change the packet's source MAC address to egress_mac */
+        hdr.ethernet.src_addr = egress_mac;
         /* Then set the egress_spec in the packet's standard_metadata to egress_port */
+        standard_metadata.egress_spec = egress_port
     }
    
     action decrement_ttl() {
         /* TODO: decrement the IPv4 header's TTL field by one */
+        hdr.ipv4.ttl = hdr.ipv4.ttl - 1;
     }
 
     action forward_to_next_hop(ipAddr_t next_hop){
         /* TODO: write next_hop to metadata's next_hop field */
+        meta.next_hop = next_hop;
     }
 
     action change_dst_mac (macAddr_t dst_mac) {
         /* TODO: change a packet's destination MAC address to dst_mac*/
+        hdr.ethernet.dest_addr = dst_mac;
     }
 
     /* define routing table */
     table ipv4_route {
+        key = {
+            hdr.ipv4.dest_addr: lpm
+        }
+        actions = {
+            forward_to_next_hop;
+            drop; // Default action if no match
+        }
+        // TODO: Not sure about this
+        size = 3;
         /* TODO: define a static ipv4 routing table */
         /* Perform longest prefix matching on dstIP then */
         /* record the next hop IP address in the metadata's next_hop field*/
@@ -106,6 +140,16 @@ control MyIngress(inout headers hdr,
 
     /* define static ARP table */
     table arp_table {
+        key = {
+            meta.next_hop: exact; // Exact match on next hop IP address
+        }
+        actions = {
+            change_dst_mac;
+            forward_to_port;
+            drop; // Default action if no match
+        }
+        size = 3;
+
         /* TODO: define a static ARP table */
         /* Perform exact matching on metadata's next_hop field then */
         /* modify the packet's src and dst MAC addresses upon match */
@@ -114,6 +158,15 @@ control MyIngress(inout headers hdr,
 
     /* define forwarding table */
     table dmac_forward {
+        key = {
+            hdr.ethernet.dst_addr: exact; // Exact match on destination MAC address
+        }
+        actions = {
+            forward_to_port;
+            drop; // Default action if no match
+        }
+        size = 3;
+
         /* TODO: define a static forwarding table */
         /* Perform exact matching on dstMAC then */
         /* forward to the corresponding egress port */ 
@@ -126,6 +179,15 @@ control MyIngress(inout headers hdr,
         /* 2. Upon hit, lookup ARP table */
         /* 3. Upon hit, Decrement ttl */
         /* 4. Then lookup forwarding table */  
+
+        ipv4_route.apply();
+        if (ipv4_route.hit) {
+            arp_table.apply();
+            if (arp_table.hit)
+                decrement_ttl();
+        }
+        dmac_forward.apply();
+
     }
 }
 
@@ -150,6 +212,7 @@ control MyComputeChecksum(inout headers hdr, inout metadata meta) {
         /* TODO: calculate the modified packet's checksum */
         /* using update_checksum() extern */
         /* Use HashAlgorithm.csum16 as a hash algorithm */
+        update_checksum(HashAlgorithm.csum16, hdr);
     } 
 }
 
