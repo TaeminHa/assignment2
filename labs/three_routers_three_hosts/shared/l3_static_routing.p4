@@ -62,7 +62,7 @@ parser MyParser(packet_in packet,
         /* TODO: do ethernet header parsing */
         /* if the frame type is IPv4, go to IPv4 parsing */ 
         // If the EtherType is IPv4 (0x0800), go to IPv4 parsing
-        16w0800 : parse_ipv4;
+        ETHER_IPV4 : parse_ipv4;
         // Add other EtherType values and transitions as needed
         default : accept; // Default to accepting the packet
     }
