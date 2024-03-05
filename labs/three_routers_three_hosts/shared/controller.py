@@ -60,7 +60,7 @@ def main(p4info_file_path, bmv2_file_path, routing_info):
                     #     "value": prefix,
                     #     "prefix_len": prefix_len
                     # }},
-                    action_name="forward_to_next_hop",
+                    action_name="MyIngress.forward_to_next_hop",
                     action_params={"next_hop": next_hop_ip}
                 )
                 # Add the table entry to the switch
@@ -78,7 +78,7 @@ def main(p4info_file_path, bmv2_file_path, routing_info):
                 arp_entry = p4info_helper.buildTableEntry(
                     table_name="MyIngress.arp_table",
                     match_fields={"meta.next_hop": next_hop_ip},
-                    action_name="change_dest_mac",
+                    action_name="MyIngress.change_dest_mac",
                     action_params={"dest_mac": next_hop_mac}
                 )
                 # Add the table entry to the switch
@@ -95,7 +95,7 @@ def main(p4info_file_path, bmv2_file_path, routing_info):
                 dmac_entry = p4info_helper.buildTableEntry(
                     table_name="MyIngress.dmac_forward",
                     match_fields={"hdr.ethernet.dest_addr": next_hop_mac},
-                    action_name="forward_to_port",
+                    action_name="MyIngress.forward_to_port",
                     action_params={"egress_port": egress_port, "egress_mac": egress_mac}
                 )
                 # Add the table entry to the switch
