@@ -136,9 +136,9 @@ control MyIngress(inout headers hdr,
         meta.next_hop = next_hop;
     }
 
-    action change_dst_mac (macAddr_t dst_mac) {
-        /* TODO: change a packet's destination MAC address to dst_mac*/
-        hdr.ethernet.dest_addr = dst_mac;
+    action change_dest_mac (macAddr_t dest_mac) {
+        /* TODO: change a packet's destination MAC address to dest_mac*/
+        hdr.ethernet.dest_addr = dest_mac;
     }
 
     /* define routing table */
@@ -148,7 +148,7 @@ control MyIngress(inout headers hdr,
         /* record the next hop IP address in the metadata's next_hop field*/
         key = {
             hdr.ipv4.dest_addr: lpm;
-            hdr.ipv4.dest_addr_prefix_len: exact;
+            // hdr.ipv4.dest_addr_prefix_len: exact;
         }
         actions = {
             forward_to_next_hop;
@@ -169,7 +169,7 @@ control MyIngress(inout headers hdr,
             meta.next_hop: exact; // Exact match on next hop IP address
         }
         actions = {
-            change_dst_mac;
+            change_dest_mac;
             forward_to_port;
             drop; // Default action if no match
         }
