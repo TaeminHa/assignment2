@@ -118,9 +118,8 @@ def main(p4info_file_path, bmv2_file_path):
                     action_name="MyIngress.forward_to_port",
                     action_params={"egress_port": port_id}
                 )
+                # TODO: does this need to timeout for forwarding?
                 dmac_entry.idle_timeout_ns = 15000000000
-                # print('dmac entry')
-                # print(dmac_entry)
                 s1.WriteTableEntry(dmac_entry)
 
                 print('finished writing to dmac')
@@ -129,41 +128,13 @@ def main(p4info_file_path, bmv2_file_path):
                     table_name="MyIngress.smac_table",
                     match_fields={"hdr.ethernet.src_addr": eth_src_addr},
                     action_name="NoAction",
-                    # action_params={"egress_port": port_id}
                 )
                 smac_entry.idle_timeout_ns = 15000000000
                 s1.WriteTableEntry(smac_entry)
 
                 print('finished writing to smac')
-            
-            
-            
-                # mac_to_port = {"00:00:0a:00:00:01":1,
-                #             "00:00:0a:00:00:02":2,
-                #             "00:00:0a:00:00:03":3,
-                #             "00:00:0a:00:00:04":4}
-                # for eth_dest_addr, port_id in mac_to_port.items():
-                #     dmac_entry = p4info_helper.buildTableEntry(
-                #         table_name="MyIngress.dmac_forward",
-                #         match_fields={"hdr.ethernet.dest_addr": eth_dest_addr},
-                #         action_name="MyIngress.forward_to_port",
-                #         action_params={"egress_port": port_id}
-                #     )
-                #     dmac_entry.idle_timeout_ns = 15000000000
-                #     s1.WriteTableEntry(dmac_entry)
 
-                # for eth_src_addr, port_id in mac_to_port.items():
-                #     smac_entry = p4info_helper.buildTableEntry(
-                #         table_name="MyIngress.smac_table",
-                #         match_fields={"hdr.ethernet.src_addr": eth_src_addr},
-                #         action_name="learn",
-                #         # action_params={"egress_port": port_id}
-                #     )
-                #     smac_entry.idle_timeout_ns = 15000000000
-                #     s1.WriteTableEntry(smac_entry)
-
-                # print(s1)
-                print("NEW CODE")
+                # TODO: delete this code before submission
                 print_table_entries("MyIngress.dmac_forward")
                 print_table_entries("MyIngress.smac_table")
             elif (digest_type == 'idle_timeout_notification'):
