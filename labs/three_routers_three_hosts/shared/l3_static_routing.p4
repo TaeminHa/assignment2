@@ -10,8 +10,8 @@ typedef bit<48> macAddr_t;
 typedef bit<32> ipAddr_t;
 header ethernet_t {
     /* TODO: define Ethernet header */ 
-    macAddr_t src_addr;
     macAddr_t dest_addr;
+    macAddr_t src_addr;
     bit<16> ether_type;
 }
 
@@ -94,8 +94,13 @@ control MyVerifyChecksum(inout headers hdr, inout metadata meta) {
         {
             hdr.ipv4.version,
             hdr.ipv4.ihl,
-            hdr.ipv4.flags,
+            hdr.ipv4.diffserv,
+            hdr.ipv4.total_len,
             hdr.ipv4.id,
+            hdr.ipv4.flags,
+            hdr.ipv4.frag_offset,
+            hdr.ipv4.ttl,
+            hdr.ipv4.protocol,
             hdr.ipv4.src_addr,
             hdr.ipv4.dest_addr
         },
@@ -199,14 +204,29 @@ control MyIngress(inout headers hdr,
     apply {
         /* TODO: Implement a routing logic */
         /* 1. Lookup IPv4 routing table */
-        ipv4_route.apply();
 
-        /* 2. Upon hit, lookup ARP table */
-        if(meta.next_hop != 0){
-            /* 3. Upon hit, Decrement ttl */
 
-            arp_table.apply();
+        if(ipv4_route.apply().hit){
+            if(arp_table.apply().hit){
+                decrement_ttl();
+            }
         }
+        
+
+
+        // ipv4_route.apply();
+
+        // /* 2. Upon hit, lookup ARP table */
+        // if(meta.next_hop != 0){
+        //     /* 3. Upon hit, Decrement ttl */
+
+        //     arp_table.apply();
+
+
+        //     // TODO: check for hit
+        //     decrement_ttl();
+
+        // }
 
         /* 4. Then lookup forwarding table */  
         dmac_forward.apply();
@@ -245,11 +265,16 @@ control MyComputeChecksum(inout headers hdr, inout metadata meta) {
         /* Use HashAlgorithm.csum16 as a hash algorithm */
 
         update_checksum(true, 
-                {
+        {
             hdr.ipv4.version,
             hdr.ipv4.ihl,
-            hdr.ipv4.flags,
+            hdr.ipv4.diffserv,
+            hdr.ipv4.total_len,
             hdr.ipv4.id,
+            hdr.ipv4.flags,
+            hdr.ipv4.frag_offset,
+            hdr.ipv4.ttl,
+            hdr.ipv4.protocol,
             hdr.ipv4.src_addr,
             hdr.ipv4.dest_addr
         },

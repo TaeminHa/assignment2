@@ -46,7 +46,10 @@ def main(p4info_file_path, bmv2_file_path, routing_info):
                             table_name=table_name,
                             match_field_id=match_id
                         )            
-                        match_val = match.exact.value
+                        if match.exact.value:
+                            match_val = match.exact.value
+                        else:
+                            match_val = match.lpm.value
                         print(f"{match_name}:{match_val.hex()}", end=" ")
                     
                     action_id = table_entry.action.action.action_id
