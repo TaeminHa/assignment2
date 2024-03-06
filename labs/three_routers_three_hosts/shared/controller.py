@@ -99,8 +99,6 @@ def main(p4info_file_path, bmv2_file_path, routing_info):
                 # Add the table entry to the switch
                 s1.WriteTableEntry(ipv4_route_entry)
 
-                print("wrote to ipv4")
-
                 
                 print ("Add ARP table entry", next_hop_ip, next_hop_mac)
                 # TODO: Add table entries to "MyIngress.arp_table"
@@ -116,7 +114,6 @@ def main(p4info_file_path, bmv2_file_path, routing_info):
                 )
                 # Add the table entry to the switch
                 s1.WriteTableEntry(arp_entry)
-                print("wrote to arp")
                 
                 print ("Add MAC table entry", next_hop_mac, egress_port, egress_mac)
                 # TODO: Add table entries to "MyIngress.dmac_forward"
@@ -131,12 +128,11 @@ def main(p4info_file_path, bmv2_file_path, routing_info):
                 )
                 # Add the table entry to the switch
                 s1.WriteTableEntry(dmac_entry)
-                print("wrote to dmac")
 
-                print("---- TABLE ENTRIES ----")
-                print_table_entries("MyIngress.ipv4_route")
-                print_table_entries("MyIngress.arp_table")
-                print_table_entries("MyIngress.dmac_forward")
+                # print("---- TABLE ENTRIES ----")
+                # print_table_entries("MyIngress.ipv4_route")
+                # print_table_entries("MyIngress.arp_table")
+                # print_table_entries("MyIngress.dmac_forward")
 
 
     

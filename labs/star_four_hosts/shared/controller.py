@@ -87,11 +87,8 @@ def main(p4info_file_path, bmv2_file_path):
         
         # TODO: MAC learning
         while (True):
-            print("in mac learning section")
             # read digest message in from switch
             digests = s1.DigestList()
-            # print("digests")
-            # print(digests)
             
             digest_type = digests.WhichOneof('update')
             if (digest_type == 'digest'):
@@ -122,8 +119,6 @@ def main(p4info_file_path, bmv2_file_path):
                 dmac_entry.idle_timeout_ns = 15000000000
                 s1.WriteTableEntry(dmac_entry)
 
-                print('finished writing to dmac')
-
                 smac_entry = p4info_helper.buildTableEntry(
                     table_name="MyIngress.smac_table",
                     match_fields={"hdr.ethernet.src_addr": eth_src_addr},
@@ -132,11 +127,10 @@ def main(p4info_file_path, bmv2_file_path):
                 smac_entry.idle_timeout_ns = 15000000000
                 s1.WriteTableEntry(smac_entry)
 
-                print('finished writing to smac')
-
                 # TODO: delete this code before submission
-                print_table_entries("MyIngress.dmac_forward")
-                print_table_entries("MyIngress.smac_table")
+                # print_table_entries("MyIngress.dmac_forward")
+                # print_table_entries("MyIngress.smac_table")
+    
             elif (digest_type == 'idle_timeout_notification'):
                 # Handle timeout
                 table_entries = digests.idle_timeout_notification.table_entry
